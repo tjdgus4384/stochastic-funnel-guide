@@ -36,7 +36,7 @@ def paths(p, A, n=40, seed=3):
 # 1. top view: optimal funnel vs the two jitter-free designs, sigma = 1, eps = 0.1 %
 p = params(1.0); x, s = F.grids(p)
 g_opt = Z[1.0]['g_0.001']
-designs = [('optimal funnel', g_opt), ('jitter-free: push as late as possible', F.straight(p, p.w, p.abar)),
+designs = [('rails at the HJB boundary', g_opt), ('jitter-free: push as late as possible', F.straight(p, p.w, p.abar)),
            ('jitter-free: hold at the tolerance', F.straight(p, p.w, 0.0))]
 fig, ax = plt.subplots(1, 3, figsize=(11, 3.2), sharey=True)
 for k, (name, g) in enumerate(designs):
@@ -61,7 +61,7 @@ im = ax[0].pcolormesh(sv, x[m], v[:, m].T, cmap='viridis', shading='auto'); fig.
 ax[0].set_title(r'value function $v(s,x)$', fontsize=9)
 im = ax[1].pcolormesh(sv, x[m], Ap[:, m].T, cmap='RdBu', shading='auto', vmin=-1.5, vmax=1.5)
 ax[1].plot(s, g_opt, 'k', lw=1); ax[1].plot(s, -g_opt, 'k', lw=1)
-ax[1].set_title(r'optimal push: red $-\bar a$, blue $+\bar a$, white 0', fontsize=9)
+ax[1].set_title(r'HJB policy: red $-\bar a$, blue $+\bar a$, white 0', fontsize=9)
 for q in ax:
     q.set_xlabel('s [s]'); q.set_ylabel('x [mm]')
 fig.tight_layout(); fig.savefig(FIG / 'value.pdf'); plt.close(fig)
@@ -73,7 +73,7 @@ for k, eps in enumerate(('0.01', '0.001')):
         q = params(sg); xx, sq = F.grids(q)
         e = R[sg]['eps'][eps]
         gg = Z[sg][f'g_{float(eps)}']; gg = np.where(np.isfinite(gg), gg, np.nan)
-        ax[k].plot(sq, gg, c=COL[sg], label=fr'optimal, $\sigma$={sg}')
+        ax[k].plot(sq, gg, c=COL[sg], label=fr'HJB boundary, $\sigma$={sg}')
         i0 = int(np.argmax(np.isfinite(gg))); ax[k].plot(sq[i0], gg[i0], 'o', c=COL[sg], ms=3)
         b = e['straight_best']
         ax[k].plot(sq, F.straight(q, b['g_end'], b['slope']), c=COL[sg], ls='--', lw=.8)
@@ -88,11 +88,11 @@ fig, ax = plt.subplots(1, 2, figsize=(9, 2.9))
 for k, eps in enumerate(('0.01', '0.001')):
     for sg in SIG:
         e = R[sg]['eps'][eps]
-        rows = e['straight_rows']
+        rows = [r for r in e['straight_rows'] if r['g_end'] >= 0]   # a rail gap cannot be negative
         ax[k].plot([r['slope'] for r in rows], [r['push'] for r in rows], 'o-', ms=2.5, c=COL[sg], label=fr'straight, $\sigma$={sg}')
         ax[k].axhline(e['optimal']['push'], c=COL[sg], ls='--', lw=.8)
     ax[k].set_xlabel('funnel slope [mm/s]'); ax[k].set_ylabel('expected push [mm]')
-    ax[k].set_title(rf'$\varepsilon$ = {100 * float(eps):g}%   (dashed: optimum)', fontsize=9); ax[k].set_ylim(2.0, 3.6)
+    ax[k].set_title(rf'$\varepsilon$ = {100 * float(eps):g}%   (dashed: HJB policy)', fontsize=9); ax[k].set_ylim(2.0, 3.6)
 ax[0].legend(fontsize=7)
 fig.tight_layout(); fig.savefig(FIG / 'slope.pdf'); plt.close(fig)
 

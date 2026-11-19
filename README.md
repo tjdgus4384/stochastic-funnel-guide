@@ -19,8 +19,11 @@ With a Lagrange multiplier `c` this becomes `maximise E[1{|X_T| <= w} - c int |a
 
     v_t + abar (|v_x| - c)^+ + sigma^2/2 v_xx = 0,    v(T, x) = 1{|x| <= w}.
 
-The optimal guide pushes with full force where `|v_x| > c` and does not push elsewhere,
-which is a pair of rails at `+-g(s)`. The code computes this funnel shape `g(s)`.
+The HJB policy pushes at the full rate where `|v_x| > c` and does not push elsewhere. Numerically the pushed set is
+`g(s) < |x| < G(s)`: objects far outside are given up. A fixed rail cannot give up objects, so the guide is built
+from the inner boundary only, as a pair of rails at `+-g(s)` that push everything beyond them. This rail is an
+approximation of the HJB policy and is evaluated separately (Feynman-Kac and Monte Carlo).
+Straight funnels are compared against the discrete Lagrangian bound `U_c + (R_c - eps) / c`.
 
 ## Files
 
